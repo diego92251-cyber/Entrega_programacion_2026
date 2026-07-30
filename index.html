@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -97,6 +97,16 @@ body {
   font-weight: 600;
 }
  
+.tab-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+ 
+.tab-btn:disabled:hover {
+  background: transparent;
+  color: var(--text-dim);
+}
+ 
 .tab-num {
   display: inline-flex;
   align-items: center;
@@ -155,7 +165,8 @@ body {
 }
  
 .pdf-wrapper embed,
-.pdf-wrapper iframe {
+.pdf-wrapper iframe,
+.pdf-wrapper object {
   width: 100%;
   height: 100%;
   border: none;
@@ -185,6 +196,68 @@ body {
   text-align: center;
   padding: 40px;
 }
+
+/* Estilos para la tarjeta de introducción */
+.intro-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 50px 40px;
+  text-align: center;
+}
+
+.intro-card .emoji-big {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.intro-card h2 {
+  font-size: 1.8rem;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.intro-card .subtitle {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin: 0 0 20px;
+  font-weight: 500;
+}
+
+.intro-card .info-line {
+  font-size: 1rem;
+  color: var(--text-dim);
+  margin: 6px 0;
+}
+
+.intro-card .info-line span {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.intro-card .divider {
+  width: 60px;
+  height: 2px;
+  background: var(--accent);
+  margin: 20px auto;
+  border-radius: 2px;
+  opacity: 0.4;
+}
+
+.intro-card .badge {
+  display: inline-block;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
 </style>
 </head>
 <body>
@@ -203,70 +276,154 @@ body {
     const tabsEl = document.getElementById("tabs");
     const contentEl = document.getElementById("content");
  
+    const pdfName = (n) => `EntregaSemana_${n}.pdf`;
+ 
+    // --- Construir pestañas (incluye Introducción) ---
     function buildTabs() {
+      // Pestaña Introducción (índice 0)
+      const introBtn = document.createElement("button");
+      introBtn.className = "tab-btn active";
+      introBtn.dataset.tab = "intro";
+      introBtn.disabled = false;
+      introBtn.innerHTML = `<span class="tab-num">📖</span> Introducción`;
+      introBtn.addEventListener("click", () => activateTab("intro"));
+      tabsEl.appendChild(introBtn);
+
+      // Pestañas Semana 1 a 17
       for (let i = 1; i <= TOTAL_ENTREGAS; i++) {
         const btn = document.createElement("button");
         btn.className = "tab-btn";
         btn.dataset.tab = i;
-        btn.innerHTML = `<span class="tab-num">${i}</span> Entrega ${i}`;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="tab-num">${i}</span> Semana ${i}`;
         btn.addEventListener("click", () => activateTab(i));
         tabsEl.appendChild(btn);
       }
     }
  
+    // --- Construir paneles (incluye Introducción) ---
     function buildPanels() {
+      // Panel Introducción
+      const introPanel = document.createElement("section");
+      introPanel.className = "panel active";
+      introPanel.id = "panel-intro";
+      introPanel.innerHTML = `
+        <div class="intro-card">
+          <div class="emoji-big">🧬</div>
+          <h2>Diego Alejandro Soto Mesa</h2>
+          <p class="subtitle">🐍 Estudiante de Pregrado en Biología</p>
+          <div class="divider"></div>
+          <p class="info-line">📚 <span>Programación para Biología - Bio-Python</span></p>
+          <p class="info-line">📅 <span>Entregas de trabajos prácticos</span></p>
+          <p class="info-line">🏛️ <span>Universidad Nacional de Colombia</span></p>
+          <div class="badge">🧪 Biología Computacional</div>
+        </div>
+      `;
+      contentEl.appendChild(introPanel);
+
+      // Paneles Semana 1 a 17
       for (let i = 1; i <= TOTAL_ENTREGAS; i++) {
         const panel = document.createElement("section");
         panel.className = "panel";
         panel.id = `panel-${i}`;
- 
-        if (i === 1) {
-          panel.innerHTML = `
-            <div class="panel-header">
-              <h2>Entrega 1</h2>
-              <p>Visualización embebida: EntregaSemana3.pdf</p>
-            </div>
-            <div class="pdf-wrapper">
-              <embed src="EntregaSemana3.pdf" type="application/pdf" />
-            </div>
-            <div class="pdf-fallback">
-              Si el PDF no se visualiza correctamente, puedes <a href="EntregaSemana3.pdf" target="_blank" rel="noopener">abrirlo en una nueva pestaña</a>.
-            </div>
-          `;
-        } else {
-          panel.innerHTML = `
-            <div class="panel-header">
-              <h2>Entrega ${i}</h2>
-              <p>Contenido pendiente por agregar</p>
-            </div>
-            <div class="empty-card">Aún no se ha añadido contenido para esta entrega.</div>
-          `;
-        }
- 
+        panel.innerHTML = `
+          <div class="panel-header">
+            <h2>Semana ${i}</h2>
+            <p>Contenido pendiente por agregar</p>
+          </div>
+          <div class="empty-card">Aún no se ha añadido el archivo "${pdfName(i)}" para esta semana.</div>
+        `;
         contentEl.appendChild(panel);
       }
     }
  
-    function activateTab(n) {
-      document.querySelectorAll(".tab-btn").forEach((btn) => {
-        btn.classList.toggle("active", Number(btn.dataset.tab) === n);
-      });
-      document.querySelectorAll(".panel").forEach((panel) => {
-        panel.classList.toggle("active", panel.id === `panel-${n}`);
-      });
-      window.location.hash = `entrega-${n}`;
+    function renderPdf(n) {
+      const name = pdfName(n);
+      const panel = document.getElementById(`panel-${n}`);
+      panel.innerHTML = `
+        <div class="panel-header">
+          <h2>Semana ${n}</h2>
+          <p>Visualización embebida: ${name}</p>
+        </div>
+        <div class="pdf-wrapper">
+          <embed src="${name}" type="application/pdf" />
+        </div>
+        <div class="pdf-fallback">
+          Si el PDF no se visualiza correctamente, puedes <a href="${name}" target="_blank" rel="noopener">abrirlo en una nueva pestaña</a>.
+        </div>
+      `;
     }
  
-    function init() {
+    function enableTab(n) {
+      const btn = tabsEl.querySelector(`.tab-btn[data-tab="${n}"]`);
+      if (btn) btn.disabled = false;
+    }
+ 
+    function fileExists(url) {
+      return new Promise((resolve) => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = url;
+        link.onload = () => { link.remove(); resolve(true); };
+        link.onerror = () => { link.remove(); resolve(false); };
+        document.head.appendChild(link);
+      });
+    }
+ 
+    async function detectPdfs() {
+      const found = [];
+      await Promise.all(
+        Array.from({ length: TOTAL_ENTREGAS }, async (_, idx) => {
+          const n = idx + 1;
+          if (await fileExists(pdfName(n))) {
+            renderPdf(n);
+            enableTab(n);
+            found.push(n);
+          }
+        })
+      );
+      return found.sort((a, b) => a - b);
+    }
+ 
+    function activateTab(id) {
+      // Desactivar todas las pestañas
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.tab === String(id));
+      });
+      // Desactivar todos los paneles
+      document.querySelectorAll(".panel").forEach((panel) => {
+        panel.classList.toggle("active", panel.id === `panel-${id}`);
+      });
+      window.location.hash = id === "intro" ? "introduccion" : `semana-${id}`;
+    }
+ 
+    async function init() {
       buildTabs();
       buildPanels();
  
-      const hashMatch = window.location.hash.match(/entrega-(\d+)/);
-      const initial = hashMatch && Number(hashMatch[1]) >= 1 && Number(hashMatch[1]) <= TOTAL_ENTREGAS
-        ? Number(hashMatch[1])
-        : 1;
+      const found = await detectPdfs();
  
-      activateTab(initial);
+      const hashMatch = window.location.hash.match(/semana-(\d+)/);
+      const fromHash = hashMatch ? Number(hashMatch[1]) : 0;
+ 
+      let initial = null;
+      if (found.includes(fromHash)) {
+        initial = fromHash;
+      } else {
+        // Si hay hash de introducción, o por defecto intro
+        if (window.location.hash === "#introduccion") {
+          initial = "intro";
+        } else {
+          initial = found.length > 0 ? found[0] : "intro";
+        }
+      }
+ 
+      if (initial) {
+        activateTab(initial);
+      } else {
+        // Fallback: activar introducción
+        activateTab("intro");
+      }
     }
  
     init();
